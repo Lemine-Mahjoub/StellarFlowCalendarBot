@@ -1,7 +1,7 @@
 import { Client, GatewayIntentBits } from "discord.js";
 import dotenv from "dotenv";
 import { commandes } from "./constant.js";
-import { profil, semaine, challenge, addChallenge, deleteChallenge, addAnimation, deleteAnimation, anim } from "./command/index.js";
+import { profil, semaine, challenge, addChallenge, deleteChallenge, addAnimation, deleteAnimation, anim, help } from "./command/index.js";
 import { isAdmin } from "./lib.js";
 
 dotenv.config();
@@ -49,6 +49,10 @@ client.on("messageCreate", async (message) => {
 
     if (command === commandes.anim) {
         anim(message);
+    }
+
+    if (command === commandes.help) {
+        help(message);
     }
 });
 

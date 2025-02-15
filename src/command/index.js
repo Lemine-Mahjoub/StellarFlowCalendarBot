@@ -6,3 +6,4 @@ export { deleteChallenge } from "./deleteChallenge.js";
 export { addAnimation } from "./addAnim.js";
 export { deleteAnimation } from "./deleteAnim.js";
 export { anim } from "./anim.js";
+export { help } from "./help.js";
