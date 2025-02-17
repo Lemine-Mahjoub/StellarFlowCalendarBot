@@ -1,13 +1,41 @@
 import { db } from "../firebase.js";
-import { collection, getDocs, query, orderBy, limit } from "firebase/firestore";
+import { collection, getDocs, query, orderBy } from "firebase/firestore";
 
 export const challenge = async (message) => {
-    const q = query(collection(db, "challenges"), orderBy("dateFin", "desc"), limit(1));
+    const q = query(collection(db, "challenges"), orderBy("dateFin", "desc"));
     const querySnapshot = await getDocs(q);
+
     if (!querySnapshot.empty) {
-        const { nom, description, dateFin, recompense } = querySnapshot.docs[0].data();
-        message.reply(`✨ **Challenge en cours :** ${nom}\n🎯 ${description}\n⏳ Fin : ${dateFin}\n🏆 Récompense : ${recompense}`);
+        await message.channel.send({
+            embeds: [{
+                color: 0x0099ff,
+                title: "📋 Liste des Challenges",
+                description: "Voici les challenges en cours et à venir",
+                footer: {
+                    text: "Demandé par " + message.author.tag,
+                    icon_url: message.author.displayAvatarURL()
+                },
+                fields: querySnapshot.docs.map(doc => {
+                    const challenge = doc.data();
+                    return {
+                        name: `✨ ${challenge.nom}`,
+                        value: `🎯 **Description:** ${challenge.description}\n⏳ **Période:** Du ${challenge.dateDebut} au ${challenge.dateFin}\n🏆 **Récompense:** ${challenge.recompense}`,
+                        inline: false
+                    };
+                })
+            }]
+        });
     } else {
-        message.reply("Aucun challenge en cours.");
+        await message.channel.send({
+            embeds: [{
+                color: 0x0099ff,
+                title: "📋 Liste des Challenges",
+                description: "❌ Aucun challenge n'est en cours pour le moment.",
+                footer: {
+                    text: "Demandé par " + message.author.tag,
+                    icon_url: message.author.displayAvatarURL()
+                }
+            }]
+        });
     }
 }

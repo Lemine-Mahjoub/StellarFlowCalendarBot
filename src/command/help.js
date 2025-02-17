@@ -1,4 +1,4 @@
-import { helpMessage, stellarFlowIcon } from "../constant.js";
+import { helpMessage } from "../constant.js";
 
 export const help = async (message) => {
     await message.channel.send({
@@ -15,9 +15,6 @@ export const help = async (message) => {
                 value: `Usage: ${command.usage}\nDescription: ${command.description}`,
                 inline: false
             })),
-            thumbnail: {
-                url: stellarFlowIcon
-            }
         }]
     });
 }

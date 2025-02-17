@@ -3,64 +3,107 @@ import { collection, getDocs, query, where } from "firebase/firestore";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from "discord.js";
 
 export const semaine = async (message) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // Fonction pour générer les heures de la journée
+    const generateTimeSlots = () => {
+        let slots = [];
+        for (let i = 0; i < 24; i++) {
+            slots.push(`${i.toString().padStart(2, '0')}h00`);
+        }
+        return slots;
+    };
 
-    const week = [];
-    for (let i = 0; i < 7; i++) {
-        const day = new Date(today);
-        day.setDate(today.getDate() + i);
-        week.push(day.toISOString().split("T")[0]); // Format YYYY-MM-DD
-    }
+    // Fonction pour formater la date
+    const formatDate = (date) => {
+        return date.toISOString().split('T')[0];
+    };
 
-    let currentDayIndex = 0;
-    await sendDayAnimation(message, week, currentDayIndex);
-};
+    // Fonction pour créer l'embed d'un jour
+    const createDayEmbed = async (date) => {
+        const timeSlots = generateTimeSlots();
+        const formattedDate = formatDate(date);
 
-const sendDayAnimation = async (message, week, index) => {
-    console.log(week[index])
-    const currentDate = week[index];
-    const q = query(collection(db, "animations"), where("date", "==", currentDate));
-    const snapshot = await getDocs(q);
-    const animationsList = snapshot.docs.map(doc => doc.data()).sort((a, b) => a.heure.localeCompare(b.heure));
-
-    let animations = animationsList.length
-        ? animationsList.map(({ heure, nom }) => `**${heure}** - ${nom}`).join("\n")
-        : "Aucune animation prévue pour ce jour.";
-
-    const embed = new EmbedBuilder()
-        .setTitle(`Animations du ${currentDate}`)
-        .setDescription(animations)
-        .setColor("#0099ff");
-
-    const row = new ActionRowBuilder()
-        .addComponents(
-            new ButtonBuilder()
-                .setCustomId(`prev_day_${index}`)
-                .setLabel("⬅️ Jour précédent")
-                .setStyle(ButtonStyle.Primary)
-                .setDisabled(index === 0),
-            new ButtonBuilder()
-                .setCustomId(`next_day_${index}`)
-                .setLabel("➡️ Jour suivant")
-                .setStyle(ButtonStyle.Primary)
-                .setDisabled(index === week.length - 1)
+        // Récupérer les animations du jour
+        const q = query(collection(db, "anim"),
+            where("dateDebut", "<=", formattedDate),
+            where("dateFin", ">=", formattedDate)
         );
+        const querySnapshot = await getDocs(q);
 
-    const sentMessage = await message.reply({ embeds: [embed], components: [row] });
+        let description = '';
+        timeSlots.forEach(timeSlot => {
+            description += `**${timeSlot}**\n`;
 
-    const filter = (interaction) => interaction.user.id === message.author.id;
-    const collector = sentMessage.createMessageComponentCollector({ filter, time: 60000 });
+            // Vérifier les animations pour ce créneau
+            querySnapshot.forEach(doc => {
+                const anim = doc.data();
+                const heureDebut = anim.heureDebut;
+                const heureFin = anim.heureFin;
+                const timeSlotHour = parseInt(timeSlot.split('h')[0]);
 
-    collector.on("collect", async (interaction) => {
-        let newIndex = index;
-        if (interaction.customId.startsWith("prev_day")) {
-            newIndex = Math.max(0, index - 1);
-        } else if (interaction.customId.startsWith("next_day")) {
-            newIndex = Math.min(week.length - 1, index + 1);
+                const animHeureDebut = parseInt(heureDebut.split('h')[0]);
+                const animHeureFin = parseInt(heureFin.split('h')[0]);
+
+                if (timeSlotHour >= animHeureDebut && timeSlotHour <= animHeureFin) {
+                    description += `> 🎮 **${anim.titre}**\n> ${anim.description}\n`;
+                }
+            });
+            description += '\n';
+        });
+
+        return new EmbedBuilder()
+            .setColor(0x0099ff)
+            .setTitle(`📅 Planning du ${formattedDate}`)
+            .setDescription(description)
+            .setFooter({
+                text: `Demandé par ${message.author.tag}`,
+                iconURL: message.author.displayAvatarURL()
+            });
+    };
+
+    // Créer les boutons de navigation
+    const createNavigationButtons = () => {
+        return new ActionRowBuilder()
+            .addComponents(
+                new ButtonBuilder()
+                    .setCustomId('previous')
+                    .setLabel('◀️ Jour précédent')
+                    .setStyle(ButtonStyle.Primary),
+                new ButtonBuilder()
+                    .setCustomId('next')
+                    .setLabel('Jour suivant ▶️')
+                    .setStyle(ButtonStyle.Primary)
+            );
+    };
+
+    // Date initiale (aujourd'hui)
+    let currentDate = new Date();
+    const embed = await createDayEmbed(currentDate);
+    const buttons = createNavigationButtons();
+
+    const response = await message.reply({
+        embeds: [embed],
+        components: [buttons]
+    });
+
+    // Collecter les interactions avec les boutons
+    const collector = response.createMessageComponentCollector({
+        filter: i => i.user.id === message.author.id,
+        time: 300000 // 5 minutes
+    });
+
+    collector.on('collect', async i => {
+        if (i.customId === 'previous') {
+            currentDate.setDate(currentDate.getDate() - 1);
+        } else if (i.customId === 'next') {
+            currentDate.setDate(currentDate.getDate() + 1);
         }
 
-        await interaction.deferUpdate();
-        await sendDayAnimation(message, week, newIndex);
+        const newEmbed = await createDayEmbed(currentDate);
+        await i.update({ embeds: [newEmbed], components: [buttons] });
+    });
+
+    collector.on('end', () => {
+        response.edit({ components: [] });
     });
 };
+
