@@ -1,11 +1,27 @@
 import { db } from "../firebase.js";
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
+import { collection, getDocs, query, orderBy, deleteDoc, doc } from "firebase/firestore";
 
 export const anim = async (message) => {
     const q = query(collection(db, "anim"), orderBy("dateDebut", "asc"));
     const querySnapshot = await getDocs(q);
 
-    if (!querySnapshot.empty) {
+    // Filtrer et supprimer les animations expirées
+    const currentDate = new Date();
+    const validDocs = [];
+
+    for (const document of querySnapshot.docs) {
+        const animation = document.data();
+        const endDate = new Date(`${animation.dateFin} ${animation.heureFin}`);
+
+        if (endDate < currentDate) {
+            // Supprimer l'animation expirée
+            await deleteDoc(doc(db, "anim", document.id));
+        } else {
+            validDocs.push(document);
+        }
+    }
+
+    if (validDocs.length > 0) {
         await message.channel.send({
             embeds: [{
                 color: 0x0099ff,
@@ -15,7 +31,7 @@ export const anim = async (message) => {
                     text: "Demandé par " + message.author.tag,
                     icon_url: message.author.displayAvatarURL()
                 },
-                fields: querySnapshot.docs.map(doc => {
+                fields: validDocs.map(doc => {
                     const animation = doc.data();
                     return {
                         name: `📌 ${animation.dateDebut}`,

@@ -8,6 +8,11 @@ export const commandes = {
     deleteAnim: "!deleteanim",
     anim: "!anim",
     help: "!help",
+    badge: "!badge",
+    addBadge: "!addbadge",
+    deleteBadge: "!deletebadge",
+    assignBadge: "!assignbadge",
+    unassignBadge: "!unassignbadge",
 }
 
 export const helpMessage = {
@@ -26,7 +31,7 @@ export const helpMessage = {
         },
         {
             "name": "!profil",
-            "usage": "!profil",
+            "usage": "!profil [@utilisateur]",
             "description": "Affiche le profil détaillé de l'utilisateur incluant:\n- Nom d'utilisateur\n- Avatar\n- Rôles (hors everyone)\n- ID utilisateur\nL'affichage utilise une couleur aléatoire pour l'embed."
         },
         {
@@ -58,6 +63,31 @@ export const helpMessage = {
             "name": "!help",
             "usage": "!help",
             "description": "Affiche ce menu d'aide détaillé avec:\n- Liste complète des commandes\n- Usage de chaque commande\n- Description détaillée\n- Permissions requises"
+        },
+        {
+            "name": "!badge",
+            "usage": "!badge",
+            "description": "Affiche la liste complète des badges disponibles avec:\n- Titre du badge\n- Description détaillée\nLes badges sont triés par date de création."
+        },
+        {
+            "name": "!addbadge",
+            "usage": "!addbadge",
+            "description": "(Accès Admin)\nCréation interactive d'un nouveau badge. Le bot vous guidera étape par étape:\n1. Titre du badge\n2. Description détaillée\n\nCaractéristiques:\n- Confirmation finale avec résumé\n- Timeout de 60s par étape\n- Nécessite les permissions administrateur"
+        },
+        {
+            "name": "!deletebadge",
+            "usage": "!deletebadge [titre]",
+            "description": "(Accès Admin)\nSupprime un badge existant.\nCaractéristiques:\n- Requiert le titre exact du badge\n- Confirmation de suppression\n- Message d'erreur si non trouvé\n- Nécessite les permissions administrateur"
+        },
+        {
+            "name": "!assignbadge",
+            "usage": "!assignbadge [titre] @utilisateur",
+            "description": "(Accès Admin)\nAssigne un badge à un utilisateur.\nCaractéristiques:\n- Vérifie l'existence du badge\n- Vérifie si l'utilisateur possède déjà le badge\n- Confirmation d'attribution\n- Nécessite les permissions administrateur"
+        },
+        {
+            "name": "!unassignbadge",
+            "usage": "!unassignbadge [titre] @utilisateur",
+            "description": "(Accès Admin)\nRetire un badge d'un utilisateur.\nCaractéristiques:\n- Vérifie si l'utilisateur possède le badge\n- Confirmation de retrait\n- Message d'erreur si non trouvé\n- Nécessite les permissions administrateur"
         }
     ]
 }

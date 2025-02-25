@@ -1,7 +1,7 @@
 import { Client, GatewayIntentBits } from "discord.js";
 import dotenv from "dotenv";
 import { commandes } from "./constant.js";
-import { profil, semaine, challenge, addChallenge, deleteChallenge, addAnimation, deleteAnimation, anim, help } from "./command/index.js";
+import { profil, semaine, challenge, addChallenge, deleteChallenge, addAnimation, deleteAnimation, anim, help, addBadge, deleteBadge, badge, assignBadge, unassignBadge } from "./command/index.js";
 import { isAdmin } from "./lib.js";
 
 dotenv.config();
@@ -39,12 +39,23 @@ client.on("messageCreate", async (message) => {
     }
 
     if (command === commandes.addAnim && isAdmin(message)) {
-        console.log(args);
         addAnimation(message, args);
     }
 
     if (command === commandes.deleteAnim && isAdmin(message)) {
         deleteAnimation(message, args);
+    }
+
+    if (command === commandes.badge) {
+        badge(message);
+    }
+
+    if (command === commandes.addBadge && isAdmin(message)) {
+        addBadge(message, args);
+    }
+
+    if (command === commandes.deleteBadge && isAdmin(message)) {
+        deleteBadge(message, args);
     }
 
     if (command === commandes.anim) {
@@ -53,6 +64,14 @@ client.on("messageCreate", async (message) => {
 
     if (command === commandes.help) {
         help(message);
+    }
+
+    if (command === commandes.assignBadge && isAdmin(message)) {
+        assignBadge(message, args);
+    }
+
+    if (command === commandes.unassignBadge && isAdmin(message)) {
+        unassignBadge(message, args);
     }
 });
 

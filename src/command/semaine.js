@@ -6,8 +6,10 @@ export const semaine = async (message) => {
     // Fonction pour générer les heures de la journée
     const generateTimeSlots = () => {
         let slots = [];
-        for (let i = 0; i < 24; i++) {
-            slots.push(`${i.toString().padStart(2, '0')}h00`);
+        for (let i = 1; i <= 24; i++) {
+            // Convertit 24 en 0 pour afficher "00h00" à la fin
+            const hour = i === 24 ? 0 : i;
+            slots.push(`${hour.toString().padStart(2, '0')}h00`);
         }
         return slots;
     };
