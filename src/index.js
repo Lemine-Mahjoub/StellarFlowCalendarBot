@@ -3,6 +3,8 @@ import dotenv from "dotenv";
 import { commandes } from "./constant.js";
 import { profil, semaine, challenge, addChallenge, deleteChallenge, addAnimation, deleteAnimation, anim, help, addBadge, deleteBadge, badge, assignBadge, unassignBadge } from "./command/index.js";
 import { isAdmin } from "./lib.js";
+import express from 'express';
+import path from 'path';
 
 dotenv.config();
 
@@ -78,3 +80,13 @@ client.on("messageCreate", async (message) => {
 });
 
 client.login(process.env.DISCORD_TOKEN);
+
+const app = express();
+
+// Servir les images statiquement
+app.use('/assets', express.static(path.join(process.cwd(), 'src', 'assets')));
+
+// Démarrer le serveur sur un port (par exemple 3000)
+app.listen(2002, () => {
+    console.log('Serveur de fichiers démarré sur le port 2002');
+});

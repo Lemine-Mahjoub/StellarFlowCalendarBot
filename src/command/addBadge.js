@@ -1,5 +1,6 @@
 import { db } from "../firebase.js";
 import { collection, addDoc } from "firebase/firestore";
+import { saveImage } from '../utils/imageHandler.js';
 
 export const addBadge = async (message, args) => {
     try {
@@ -38,17 +39,75 @@ export const addBadge = async (message, args) => {
         if (descResponse.size === 0) throw new Error('Temps écoulé');
         const description = descResponse.first().content;
 
+        // Demande de l'image (optionnelle)
+        const imageMsg = await message.channel.send({
+            embeds: [{
+                color: 0x0099ff,
+                title: '🖼️ Image du badge',
+                description: 'Envoyez une image pour le badge (optionnel). Envoyez "skip" pour passer cette étape.',
+                footer: {
+                    text: 'Répondez dans la minute',
+                    icon_url: message.author.displayAvatarURL()
+                }
+            }]
+        });
+
+        const imageFilter = m => m.author.id === message.author.id;
+        const imageResponse = await message.channel.awaitMessages({ filter: imageFilter, max: 1, time: 60000 });
+        if (imageResponse.size === 0) throw new Error('Temps écoulé');
+
+        let imageFileName = null;
+        if (imageResponse.first().content.toLowerCase() !== 'skip') {
+            const attachment = imageResponse.first().attachments.first();
+            if (attachment && attachment.contentType?.startsWith('image/')) {
+                try {
+                    imageFileName = await saveImage(attachment.url);
+                    if (!imageFileName) {
+                        await message.channel.send({
+                            embeds: [{
+                                color: 0xff0000,
+                                title: '❌ Erreur',
+                                description: 'L\'image n\'a pas pu être sauvegardée. Le badge sera créé sans image.',
+                            }]
+                        });
+                    }
+                } catch (error) {
+                    console.error('Erreur lors de la sauvegarde de l\'image:', error);
+                    await message.channel.send({
+                        embeds: [{
+                            color: 0xff0000,
+                            title: '❌ Erreur',
+                            description: 'L\'image n\'a pas pu être sauvegardée. Le badge sera créé sans image.',
+                        }]
+                    });
+                }
+            } else if (!attachment) {
+                await message.channel.send({
+                    embeds: [{
+                        color: 0xff0000,
+                        title: '❌ Erreur',
+                        description: 'Aucune image n\'a été fournie. Le badge sera créé sans image.',
+                    }]
+                });
+            }
+        }
+
         // Affichage du résumé et demande de confirmation
         const confirmationMsg = await message.channel.send({
             embeds: [{
                 color: 0x0099ff,
                 title: '📋 Résumé du badge',
-                description: `**Titre:** ${titre}\n**Description:** ${description}\n\nCliquez sur les boutons ci-dessous pour confirmer ou annuler`,
+                description: `**Titre:** ${titre}\n**Description:** ${description}${imageFileName ? '\n**Image:** Incluse ✅' : '\n**Image:** Aucune ❌'}\n\nCliquez sur les boutons ci-dessous pour confirmer ou annuler`,
+                image: imageFileName ? { url: `attachment://${imageFileName}` } : null,
                 footer: {
                     text: 'Vous avez 30 secondes pour répondre',
                     icon_url: message.author.displayAvatarURL()
                 }
             }],
+            files: imageFileName ? [{
+                attachment: `./src/assets/${imageFileName}`,
+                name: imageFileName
+            }] : [],
             components: [{
                 type: 1,
                 components: [
@@ -78,6 +137,7 @@ export const addBadge = async (message, args) => {
                 await addDoc(collection(db, "badges"), {
                     titre,
                     description,
+                    imageFileName,
                     createdAt: new Date(),
                     createdBy: message.author.id
                 });
