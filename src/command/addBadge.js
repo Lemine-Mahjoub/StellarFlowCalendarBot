@@ -1,9 +1,10 @@
 import { db } from "../firebase.js";
-import { collection, addDoc } from "firebase/firestore";
-import { saveImage } from '../utils/imageHandler.js';
+import { collection, addDoc, getDocs, query } from "firebase/firestore";
+import { ActionRowBuilder, StringSelectMenuBuilder } from 'discord.js'; // Mise à jour des imports
 
 export const addBadge = async (message, args) => {
     try {
+        // Demander le titre du badge
         const titreMsg = await message.channel.send({
             embeds: [{
                 color: 0x0099ff,
@@ -21,7 +22,7 @@ export const addBadge = async (message, args) => {
         if (titreResponse.size === 0) throw new Error('Temps écoulé');
         const titre = titreResponse.first().content;
 
-        // Demande de la description
+        // Demander la description du badge
         const descMsg = await message.channel.send({
             embeds: [{
                 color: 0x0099ff,
@@ -38,6 +39,76 @@ export const addBadge = async (message, args) => {
         const descResponse = await message.channel.awaitMessages({ filter: descFilter, max: 1, time: 60000 });
         if (descResponse.size === 0) throw new Error('Temps écoulé');
         const description = descResponse.first().content;
+
+        // Demander la catégorie (via un dropdown)
+        const categoriesQuery = query(collection(db, "categories"));
+        const categoriesSnapshot = await getDocs(categoriesQuery);
+        const categories = categoriesSnapshot.docs.map(doc => doc.data().name);
+
+        const categorySelectMenu = new StringSelectMenuBuilder()
+            .setCustomId('category_select')
+            .setPlaceholder('Choisissez une catégorie')
+            .addOptions([
+                ...categories.map(category => ({ label: category, value: category })),
+                { label: 'Créer une nouvelle catégorie', value: 'create_new' }
+            ]);
+
+        const categoryMsg = await message.channel.send({
+            embeds: [{
+                color: 0x0099ff,
+                title: '📂 Catégorie',
+                description: 'Veuillez choisir une catégorie pour le badge ou créer une nouvelle catégorie.',
+                footer: {
+                    text: 'Répondez dans la minute',
+                    icon_url: message.author.displayAvatarURL()
+                }
+            }],
+            components: [new ActionRowBuilder().addComponents(categorySelectMenu)]
+        });
+
+        // Attendre la sélection de l'utilisateur
+        const categoryFilter = (i) => i.user.id === message.author.id && i.isSelectMenu();
+        const categoryResponse = await categoryMsg.awaitMessageComponent({ filter: categoryFilter, time: 60000 });
+
+        let category = categoryResponse.values[0];
+
+        if (category === 'create_new') {
+            // Si l'utilisateur veut créer une nouvelle catégorie
+            const newCategoryMsg = await message.channel.send({
+                embeds: [{
+                    color: 0x0099ff,
+                    title: '🆕 Nouvelle catégorie',
+                    description: 'Veuillez entrer le nom de la nouvelle catégorie.',
+                    footer: {
+                        text: 'Répondez dans la minute',
+                        icon_url: message.author.displayAvatarURL()
+                    }
+                }]
+            });
+
+            const newCategoryResponse = await message.channel.awaitMessages({ filter: titreFilter, max: 1, time: 60000 });
+            if (newCategoryResponse.size === 0) throw new Error('Temps écoulé');
+            category = newCategoryResponse.first().content;
+
+            // Sauvegarder la nouvelle catégorie dans Firestore
+            await addDoc(collection(db, "categories"), {
+                name: category,
+                createdAt: new Date(),
+                createdBy: message.author.id
+            });
+
+            await message.channel.send({
+                embeds: [{
+                    color: 0x00ff00,
+                    title: '✅ Catégorie créée',
+                    description: `La catégorie **${category}** a été créée avec succès.`,
+                    footer: {
+                        text: 'Créée par ' + message.author.tag,
+                        icon_url: message.author.displayAvatarURL()
+                    }
+                }]
+            });
+        }
 
         // Demande de l'image (optionnelle)
         const imageMsg = await message.channel.send({
@@ -92,12 +163,12 @@ export const addBadge = async (message, args) => {
             }
         }
 
-        // Affichage du résumé et demande de confirmation
+        // Résumé et confirmation
         const confirmationMsg = await message.channel.send({
             embeds: [{
                 color: 0x0099ff,
                 title: '📋 Résumé du badge',
-                description: `**Titre:** ${titre}\n**Description:** ${description}${imageFileName ? '\n**Image:** Incluse ✅' : '\n**Image:** Aucune ❌'}\n\nCliquez sur les boutons ci-dessous pour confirmer ou annuler`,
+                description: `**Titre:** ${titre}\n**Description:** ${description}\n**Catégorie:** ${category}${imageFileName ? '\n**Image:** Incluse ✅' : '\n**Image:** Aucune ❌'}\n\nCliquez sur les boutons ci-dessous pour confirmer ou annuler`,
                 image: imageFileName ? { url: `attachment://${imageFileName}` } : null,
                 footer: {
                     text: 'Vous avez 30 secondes pour répondre',
@@ -130,71 +201,49 @@ export const addBadge = async (message, args) => {
         });
 
         const confirmFilter = (interaction) => interaction.user.id === message.author.id;
-        try {
-            const confirmation = await confirmationMsg.awaitMessageComponent({ filter: confirmFilter, time: 30000 });
+        const confirmation = await confirmationMsg.awaitMessageComponent({ filter: confirmFilter, time: 30000 });
 
-            if (confirmation.customId === 'confirm') {
-                await addDoc(collection(db, "badges"), {
-                    titre,
-                    description,
-                    imageFileName,
-                    createdAt: new Date(),
-                    createdBy: message.author.id
-                });
+        if (confirmation.customId === 'confirm') {
+            await addDoc(collection(db, "badges"), {
+                titre,
+                description,
+                category,
+                imageFileName,
+                createdAt: new Date(),
+                createdBy: message.author.id
+            });
 
-                await confirmation.update({
-                    embeds: [{
-                        color: 0x00ff00,
-                        title: '✅ Badge créé avec succès !',
-                        description: `Le badge **${titre}** a été ajouté à la base de données.`,
-                        footer: {
-                            text: 'Créé par ' + message.author.tag,
-                            icon_url: message.author.displayAvatarURL()
-                        },
-                        timestamp: new Date()
-                    }],
-                    components: []
-                });
-            } else {
-                await confirmation.update({
-                    embeds: [{
-                        color: 0xff0000,
-                        title: '❌ Création annulée',
-                        description: 'La création du badge a été annulée.',
-                        footer: {
-                            text: 'Annulé par ' + message.author.tag,
-                            icon_url: message.author.displayAvatarURL()
-                        }
-                    }],
-                    components: []
-                });
-            }
-        } catch (error) {
-            await confirmationMsg.edit({
+            await confirmation.update({
                 embeds: [{
-                    color: 0xff0000,
-                    title: '❌ Temps écoulé',
-                    description: 'Vous n\'avez pas répondu à temps.',
+                    color: 0x00ff00,
+                    title: '✅ Badge créé avec succès !',
+                    description: `Le badge **${titre}** a été ajouté à la base de données.`,
                     footer: {
-                        text: 'Temps écoulé pour ' + message.author.tag,
+                        text: 'Créé par ' + message.author.tag,
                         icon_url: message.author.displayAvatarURL()
-                    }
+                    },
+                    timestamp: new Date()
                 }],
                 components: []
             });
-            throw new Error('Temps écoulé');
+        } else {
+            await confirmation.update({
+                embeds: [{
+                    color: 0xff0000,
+                    title: '❌ Création annulée',
+                    description: 'La création du badge a été annulée.',
+                }],
+                components: []
+            });
         }
     } catch (error) {
-        await message.channel.send({
+        console.error('Erreur : ', error);
+        await message.reply({
             embeds: [{
                 color: 0xff0000,
                 title: '❌ Erreur',
-                description: 'Une erreur est survenue ou le temps de réponse est écoulé. Veuillez réessayer.',
-                footer: {
-                    text: 'Erreur pour ' + message.author.tag,
-                    icon_url: message.author.displayAvatarURL()
-                }
+                description: 'Une erreur s\'est produite pendant le processus de création du badge. Veuillez réessayer.',
             }]
         });
     }
-}
+};

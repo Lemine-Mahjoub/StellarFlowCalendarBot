@@ -1,7 +1,7 @@
 import { Client, GatewayIntentBits } from "discord.js";
 import dotenv from "dotenv";
 import { commandes } from "./constant.js";
-import { profil, semaine, challenge, addChallenge, deleteChallenge, addAnimation, deleteAnimation, anim, help, addBadge, deleteBadge, badge, assignBadge, unassignBadge } from "./command/index.js";
+import { deleteCategorie, profil, semaine, challenge, addChallenge, deleteChallenge, addAnimation, deleteAnimation, anim, help, addBadge, deleteBadge, badge, assignBadge, unassignBadge } from "./command/index.js";
 import { isAdmin } from "./lib.js";
 import express from 'express';
 import path from 'path';
@@ -76,6 +76,10 @@ client.on("messageCreate", async (message) => {
 
     if (command === commandes.unassignBadge && isAdmin(message)) {
         unassignBadge(message, args);
+    }
+
+    if (command === commandes.deleteCategorie && isAdmin(message)) {
+        deleteCategorie(message, args);
     }
 });
 
