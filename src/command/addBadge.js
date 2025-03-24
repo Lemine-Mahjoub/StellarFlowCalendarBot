@@ -1,6 +1,7 @@
 import { db } from "../firebase.js";
 import { collection, addDoc, getDocs, query } from "firebase/firestore";
 import { ActionRowBuilder, StringSelectMenuBuilder } from 'discord.js'; // Mise à jour des imports
+import { saveImage } from '../utils/imageHandler.js';
 
 export const addBadge = async (message, args) => {
     try {

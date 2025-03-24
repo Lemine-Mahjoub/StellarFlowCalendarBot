@@ -12,4 +12,4 @@ export { addBadge } from "./addBadge.js";
 export { deleteBadge } from "./deleteBadge.js";
 export { assignBadge } from "./assignBadge.js";
 export { unassignBadge } from "./unassignBadge.js";
-export { deleteCategorie } from "./deleteCategorie.js";
+export { deleteCategory } from "./deleteCategory.js";

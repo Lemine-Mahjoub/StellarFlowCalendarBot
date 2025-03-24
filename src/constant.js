@@ -13,6 +13,7 @@ export const commandes = {
     deleteBadge: "!deletebadge",
     assignBadge: "!assignbadge",
     unassignBadge: "!unassignbadge",
+    deleteCategory: "!deletecategory"
 }
 
 export const helpMessage = {
@@ -68,6 +69,11 @@ export const helpMessage = {
             "name": "!badge",
             "usage": "!badge",
             "description": "Affiche la liste complète des badges disponibles avec:\n- Titre du badge\n- Description détaillée\nLes badges sont triés par date de création."
+        },
+        {
+            "name": "!deletecategory",
+            "usage": "!deletecategory [nom]",
+            "description": "(Accès Admin)\nSupprime une catégorie existante.\nCaractéristiques:\n- Requiert le nom exact de la catégorie\n- Confirmation de suppression\n- Message d'erreur si non trouvée\n- Nécessite les permissions administrateur"
         },
         {
             "name": "!addbadge",

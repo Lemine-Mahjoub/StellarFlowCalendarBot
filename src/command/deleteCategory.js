@@ -2,7 +2,7 @@ import { db } from "../firebase.js";
 import { collection, getDocs, query, where, deleteDoc, doc } from "firebase/firestore";
 import { EmbedBuilder } from "discord.js";
 
-export const deleteCategorie = async (interaction, args) => {
+export const deleteCategory = async (interaction, args) => {
     // Vérifie si le nom de la catégorie est fourni
     if (args.length === 0) {
         return interaction.channel.send({
