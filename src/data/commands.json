@@ -1,118 +1,124 @@
 {
-  "general": [
-    {
-      "name": "/help",
-      "arguments": null,
-      "description": "Affiche ce menu d'aide détaillé avec la liste complète des commandes, leur usage, description et permissions.",
-      "permissions": null
-    },
-    {
-      "name": "/semaine",
-      "arguments": null,
-      "description": "Affiche un planning interactif de la semaine (00h à 23h) avec vue jour par jour, navigation, animations en cours, session interactive de 5 minutes et mise à jour en temps réel.",
-      "permissions": null
-    }
-  ],
-  "profil": [
-    {
-      "name": "/profil",
-      "arguments": "@utilisateur (optionnel)",
-      "description": "Affiche le profil détaillé d'un utilisateur avec pseudo, avatar, rôles (hors everyone), ID. Embed avec couleur aléatoire.",
-      "permissions": null
-    }
-  ],
-  "ticket": [
-    {
-      "name": "/questionnaire",
-      "arguments": null,
-      "description": "Envoie le questionnaire pour les nouveaux arrivants.",
-      "permissions": "admin"
-    }
-  ],
-  "annonces": [
-    {
-      "name": "/annonces",
-      "arguments": null,
-      "description": "Affiche les annonces avec titre, description, date de création et statut.",
-      "permissions": "admin"
-    }
-  ],
-  "animation": [
-    {
-      "name": "/anim",
-      "arguments": null,
-      "description": "Affiche la liste des animations prévues (titre, description, début et fin), triées par date de début.",
-      "permissions": null
-    },
-    {
-      "name": "/addanim",
-      "arguments": "titre, description, date_debut, heure_debut, date_fin, heure_fin, répétition (hebdomadaire, mensuel, annuel)",
-      "description": "Création d'une animation",
-      "permissions": "admin"
-    },
-    {
-      "name": "/deleteanim",
-      "arguments": "titre",
-      "description": "Supprime une animation existante. Erreur si non trouvée.",
-      "permissions": "admin"
-    }
-  ],
-  "challenge": [
-    {
-      "name": "/challenge",
-      "arguments": null,
-      "description": "Affiche la liste des challenges en cours et à venir avec nom, description, dates, récompense. Tri par date de fin.",
-      "permissions": null
-    },
-    {
-      "name": "/addchallenge",
-      "arguments": "nom, description, date_debut, date_fin, recompense",
-      "description": "Création d’un challenge via une interface interactive.",
-      "permissions": "admin"
-    },
-    {
-      "name": "/deletechallenge",
-      "arguments": "nom",
-      "description": "Supprime un challenge existant avec confirmation. Affiche une erreur si non trouvé.",
-      "permissions": "admin"
-    }
-  ],
-  "badge": [
-    {
-      "name": "/badge",
-      "arguments": null,
-      "description": "Affiche la liste complète des badges disponibles avec titre et description, triés par date de création.",
-      "permissions": null
-    },
-    {
-      "name": "/addbadge",
-      "arguments": "titre, description",
-      "description": "Création interactive d’un badge avec résumé final.",
-      "permissions": "admin"
-    },
-    {
-      "name": "/deletebadge",
-      "arguments": "titre",
-      "description": "Supprime un badge existant. Confirmation requise. Erreur si non trouvé.",
-      "permissions": "admin"
-    },
-    {
-      "name": "/assignbadge",
-      "arguments": "titre, @utilisateur",
-      "description": "Assigne un badge à un utilisateur si éligible.",
-      "permissions": "admin"
-    },
-    {
-      "name": "/unassignbadge",
-      "arguments": "titre, @utilisateur",
-      "description": "Retire un badge à un utilisateur si présent.",
-      "permissions": "admin"
-    },
-    {
-      "name": "/deletecategory",
-      "arguments": "nom",
-      "description": "Supprime une catégorie de badge existante avec confirmation. Affiche une erreur si non trouvée.",
-      "permissions": "admin"
-    }
-  ]
-}
+    "general": [
+      {
+        "name": "/help",
+        "arguments": null,
+        "description": "Affiche ce menu d'aide détaillé avec la liste complète des commandes, leur usage, description et permissions.",
+        "permissions": null
+      },
+      {
+        "name": "/semaine",
+        "arguments": null,
+        "description": "Affiche un planning interactif de la semaine (00h à 23h) avec vue jour par jour, navigation, animations en cours, session interactive de 5 minutes et mise à jour en temps réel.",
+        "permissions": null
+      }
+    ],
+    "profil": [
+      {
+        "name": "/profil",
+        "arguments": "@utilisateur (optionnel)",
+        "description": "Affiche le profil détaillé d'un utilisateur avec pseudo, avatar, rôles (hors everyone), ID. Embed avec couleur aléatoire.",
+        "permissions": null
+      }
+    ],
+    "ticket": [
+      {
+        "name": "/questionnaire",
+        "arguments": null,
+        "description": "Envoie le questionnaire pour les nouveaux arrivants.",
+        "permissions": "admin"
+      }
+    ],
+    "annonces": [
+      {
+        "name": "/annonce",
+        "arguments": "titre, description, image (optionnelle), channel (optionnel)",
+        "description": "Crée une annonce bien formatée avec titre, description, image facultative et canal ciblé.",
+        "permissions": "admin"
+      }
+    ],
+    "animation": [
+      {
+        "name": "/anim",
+        "arguments": null,
+        "description": "Affiche la liste des animations prévues (titre, description, début et fin), triées par date de début avec pagination dynamique et suppression automatique des expirées.",
+        "permissions": null
+      },
+      {
+        "name": "/addanim",
+        "arguments": "titre, description, date_debut, heure_debut, date_fin, heure_fin, répétition (hebdomadaire, mensuel, annuel - optionnel)",
+        "description": "Crée une animation et peut la répéter automatiquement sur l’année selon la fréquence choisie.",
+        "permissions": "admin"
+      },
+      {
+        "name": "/deleteanim",
+        "arguments": "titre, date (optionnel)",
+        "description": "Supprime une animation par son titre ou une occurrence précise par date.",
+        "permissions": "admin"
+      }
+    ],
+    "challenge": [
+      {
+        "name": "/challenge",
+        "arguments": null,
+        "description": "Affiche la liste des challenges en cours et à venir avec nom, description, dates et récompense. Supprime automatiquement les expirés.",
+        "permissions": null
+      },
+      {
+        "name": "/addchallenge",
+        "arguments": "nom, description, date_debut, date_fin, recompense",
+        "description": "Ajoute un challenge avec dates et récompense.",
+        "permissions": "admin"
+      },
+      {
+        "name": "/deletechallenge",
+        "arguments": "nom",
+        "description": "Supprime un challenge avec autocomplétion sur le nom.",
+        "permissions": "admin"
+      }
+    ],
+    "badge": [
+      {
+        "name": "/badge",
+        "arguments": "categorie (optionnel)",
+        "description": "Affiche la liste complète des badges (filtrable par catégorie) avec pagination interactive.",
+        "permissions": null
+      },
+      {
+        "name": "/addbadge",
+        "arguments": "titre, description, categorie (auto-complétion), image (optionnelle)",
+        "description": "Crée un badge interactif. La catégorie est créée automatiquement si elle n'existe pas.",
+        "permissions": "admin"
+      },
+      {
+        "name": "/deletebadge",
+        "arguments": "titre",
+        "description": "Supprime un badge avec autocomplétion. Supprime aussi les attributions liées.",
+        "permissions": "admin"
+      },
+      {
+        "name": "/assignbadge",
+        "arguments": "titre, @utilisateur",
+        "description": "Assigne un badge à un utilisateur si éligible.",
+        "permissions": "admin"
+      },
+      {
+        "name": "/unassignbadge",
+        "arguments": "titre, @utilisateur",
+        "description": "Retire un badge à un utilisateur s’il est attribué.",
+        "permissions": "admin"
+      },
+      {
+        "name": "/createcategory",
+        "arguments": "nom",
+        "description": "Crée une catégorie de badge.",
+        "permissions": "admin"
+      },
+      {
+        "name": "/deletecategory",
+        "arguments": "nom",
+        "description": "Supprime une catégorie uniquement si elle n’est utilisée par aucun badge.",
+        "permissions": "admin"
+      }
+    ]
+  }

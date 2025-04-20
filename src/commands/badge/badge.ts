@@ -69,7 +69,7 @@ export const badge = buildCommand(
       const pageBadges = badges.slice(start, end);
 
       return pageBadges.map((doc, index) => {
-        const badge = doc.data();
+        const badge = doc.data() as any;
         const imageUrl = badge.imageFileName
           ? `http://${process.env.IP}:${process.env.PORT}/assets/${badge.imageFileName}`
           : null;
